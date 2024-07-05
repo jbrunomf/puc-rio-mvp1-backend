@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 import os
 
 from models.base import Base
-from models.user import User
+from models.usuario import User
 from models.produto import Produto
 
 db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
