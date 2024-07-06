@@ -80,8 +80,8 @@ def get_produtos():
     for produto in produtos_query:
         produtos_list.append({"id": produto.id, "descricao": produto.descricao, "preco_venda": produto.preco_venda,
                               "preco_custo": produto.preco_custo,
-                              "data_criacao": produto.data_criacao.strftime('%Y-%m-%d'), "is_novo": produto.is_novo,
-                              "imagem": url_for('static', filename=produto.imagem)})
+                              "data_criacao": produto.data_criacao.strftime('%Y-%m-%d'), "is_novo": produto.is_novo})
+                              # "imagem": url_for('static', filename=produto.imagem)})
 
     return {"produtos": produtos_list}
 
@@ -98,32 +98,33 @@ def create_produto(form: ProdutoSchema):
     # if 'imagem' not in request.files:
     #     return jsonify({"err_message": "Você precisa informar uma imagem para o produto."}), 400
 
-    file = request.files['imagem']
+    # file = request.files['imagem']
+    #
+    # if file.filename == '':
+    #     return jsonify({"message": "Nenhuma imagem selecionada. Tente novamente."}), 400
 
-    if file.filename == '':
-        return jsonify({"message": "Nenhuma imagem selecionada. Tente novamente."}), 400
+    # if file and allowed_file(file.filename):
+    #     filename = secure_filename(file.filename)
+    #     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    #     file.save(file_path)
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+    produto = Produto(descricao=form.descricao,
+                      preco_venda=form.preco_venda,
+                      preco_custo=form.preco_custo,
+                      data_criacao=datetime.now(),
+                      is_novo=bool(form.is_novo),
+                      imagem=None)
+    try:
+        session = Session()
+        session.add(produto)
+        session.commit()
+        return produto.to_dict(), 200
+    except Exception as e:
+        err_message = f'{e.args}'
+        return {"message": err_message}, 400
 
-        produto = Produto(descricao=form.descricao,
-                          preco_venda=form.preco_venda,
-                          preco_custo=form.preco_custo,
-                          data_criacao=datetime.now(),
-                          is_novo=bool(form.is_novo),
-                          imagem=file_path)
-        try:
-            session = Session()
-            session.add(produto)
-            session.commit()
-            return produto.to_dict(), 200
-        except Exception as e:
-            err_message = f'{e.args}'
-            return {"message": err_message}, 400
-    else:
-        return jsonify({"error": "Allowed image types are -> png, jpg, jpeg, gif"}), 400
+# else:
+# return jsonify({"error": "Allowed image types are -> png, jpg, jpeg, gif"}), 400
 
 
 @app.delete('/produto', tags=[produto_tag],
