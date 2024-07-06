@@ -19,3 +19,8 @@ class ProdutoListSchema(BaseModel):
 
 class DeleteProdutoSchema(BaseModel):
     id: int
+    message: str
+
+
+class ProdutoQuerySchema(BaseModel):
+    id: int
